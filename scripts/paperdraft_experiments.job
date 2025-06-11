@@ -1,0 +1,100 @@
+#!/bin/bash
+#SBATCH --job-name=AMOCRecons
+#SBATCH --nodes=6
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=128G
+#SBATCH --time=20:00:00
+#SBATCH --partition=base
+
+
+export OMP_NUM_THREADS=16
+module load gcc12-env 
+module load miniconda3
+
+conda activate amoc_recons
+
+
+
+configs=(
+    "--input_smoothing 10 --input_cycles 1,2 --test_period 2004,2024 --paperdraft_index 001"
+    "--input_smoothing 30 --input_cycles 1,2 --test_period 2004,2024 --paperdraft_index 002"
+    "--input_smoothing 90 --input_cycles 1,2 --test_period 2004,2024 --paperdraft_index 003"
+    "--input_smoothing 365 --input_cycles 1,2 --test_period 2004,2024 --paperdraft_index 004"
+    "--input_smoothing 30 --input_cycles 1,2 --output_smoothing 90 --test_period 2004,2024 --paperdraft_index 005"
+    "--input_smoothing 30 --input_cycles 1,2 --output_smoothing 365 --test_period 2004,2024 --paperdraft_index 006"
+    "--input_smoothing 90 --input_cycles 1,2 --output_smoothing 365 --test_period 2004,2024 --paperdraft_index 007"
+    "--input_smoothing 10 --input_cycles 1,2 --test_period 2004,2024 --moc_type geostrophic --paperdraft_index 008"
+    "--input_smoothing 30 --input_cycles 1,2 --test_period 2004,2024 --moc_type geostrophic --paperdraft_index 009"
+    "--input_smoothing 90 --input_cycles 1,2 --test_period 2004,2024 --moc_type geostrophic --paperdraft_index 010"
+    "--input_smoothing 365 --input_cycles 1,2 --test_period 2004,2024 --moc_type geostrophic --paperdraft_index 011"
+    "--input_smoothing 10 --inpaut_cycles 1,2 --test_period 2004,2024 --input_feat FcAcWs --paperdraft_index 012"
+    "--input_smoothing 30 --input_cycles 1,2 --test_period 2004,2024 --input_feat FcAcWs --paperdraft_index 013"
+    "--input_smoothing 90 --input_cycles 1,2 --test_period 2004,2024 --input_feat FcAcWs --paperdraft_index 014"
+    "--input_smoothing 365 --input_cycles 1,2 --test_period 2004,2024 --input_feat FcAcWs --paperdraft_index 015"
+    "--input_smoothing 10 --input_cycles 1,2 --test_period 2004,2024 --depth_information deep --paperdraft_index 016"
+    "--input_smoothing 30 --input_cycles 1,2 --test_period 2004,2024 --depth_information deep --paperdraft_index 017"
+    "--input_smoothing 90 --input_cycles 1,2 --test_period 2004,2024 --depth_information deep --paperdraft_index 018"
+    "--input_smoothing 365 --input_cycles 1,2 --test_period 2004,2024 --depth_information deep --paperdraft_index 019"
+    "--input_smoothing 10 --input_cycles 1,2 --test_period 2004,2024 --depth_information none --paperdraft_index 020"
+    "--input_smoothing 30 --input_cycles 1,2 --test_period 2004,2024 --depth_information none --paperdraft_index 021"
+    "--input_smoothing 90 --input_cycles 1,2 --test_period 2004,2024 --depth_information none --paperdraft_index 022"
+    "--input_smoothing 365 --input_cycles 1,2 --test_period 2004,2024 --depth_information none --paperdraft_index 023"
+    "--input_smoothing 10 --input_cycles 1,2 --test_period 2004,2024 --input_feat Ar --paperdraft_index 024"
+    "--input_smoothing 30 --input_cycles 1,2 --test_period 2004,2024 --input_feat Ar --paperdraft_index 025"
+    "--input_smoothing 90 --input_cycles 1,2 --test_period 2004,2024 --input_feat Ar --paperdraft_index 026"
+    "--input_smoothing 365 --input_cycles 1,2 --test_period 2004,2024 --input_feat Ar --paperdraft_index 027"
+    "--input_smoothing 90 --input_cycles all --test_period 2004,2024 --paperdraft_index 028"
+    "--input_smoothing 365 --input_cycles all --test_period 2004,2024 --paperdraft_index 029"
+    "--input_smoothing 90 --input_cycles all --test_cycle 3 --validation_length 20 --paperdraft_index 030"
+    "--input_smoothing 365 --input_cycles all --test_cycle 3 --validation_length 20 --paperdraft_index 031"
+    "--input_smoothing 1825 --input_cycles all --test_cycle 3 --validation_length 20 --paperdraft_index 032"
+    "--input_smoothing 10 --input_cycles 1,2 --test_period 2004,2024 --moc_type geostrophic --input_feat Ar --paperdraft_index 033"
+    "--input_smoothing 30 --input_cycles 1,2 --test_period 2004,2024 --moc_type geostrophic --input_feat Ar --paperdraft_index 034"
+    "--input_smoothing 90 --input_cycles 1,2 --test_period 2004,2024 --moc_type geostrophic --input_feat Ar --paperdraft_index 035"
+    "--input_smoothing 365 --input_cycles 1,2 --test_period 2004,2024 --moc_type geostrophic --input_feat Ar --paperdraft_index 036"
+    "--input_smoothing 10 --input_cycles 1,2 --test_period 2004,2024 --moc_type geostrophic --input_feat WsAcFc --paperdraft_index 037"
+    "--input_smoothing 30 --input_cycles 1,2 --test_period 2004,2024 --moc_type geostrophic --input_feat WsAcFc --paperdraft_index 038"
+    "--input_smoothing 90 --input_cycles 1,2 --test_period 2004,2024 --moc_type geostrophic --input_feat WsAcFc --paperdraft_index 039"
+    "--input_smoothing 365 --input_cycles 1,2 --test_period 2004,2024 --moc_type geostrophic --input_feat WsAcFc --paperdraft_index 040"
+    "--input_smoothing 10 --input_cycles 1,2 --test_period 2004,2024 --depth_information none --moc_type geostrophic --paperdraft_index 041"
+    "--input_smoothing 30 --input_cycles 1,2 --test_period 2004,2024 --depth_information none --moc_type geostrophic --paperdraft_index 042"
+    "--input_smoothing 90 --input_cycles 1,2 --test_period 2004,2024 --depth_information none --moc_type geostrophic --paperdraft_index 043"
+    "--input_smoothing 365 --input_cycles 1,2 --test_period 2004,2024 --depth_information none --moc_type geostrophic --paperdraft_index 044"
+    "--input_smoothing 10 --input_cycles 1,2 --test_period 2004,2024 --depth_information deep --moc_type geostrophic --paperdraft_index 045"
+    "--input_smoothing 30 --input_cycles 1,2 --test_period 2004,2024 --depth_information deep --moc_type geostrophic --paperdraft_index 046"
+    "--input_smoothing 90 --input_cycles 1,2 --test_period 2004,2024 --depth_information deep --moc_type geostrophic --paperdraft_index 047"
+    "--input_smoothing 365 --input_cycles 1,2 --test_period 2004,2024 --depth_information deep --moc_type geostrophic --paperdraft_index 048"
+    "--input_smoothing 90 --input_cycles all --test_period 2004,2024 --moc_type geostrophic --paperdraft_index 049"
+    "--input_smoothing 365 --input_cycles all --test_period 2004,2024 --moc_type geostrophic --paperdraft_index 050"
+    "--input_smoothing 90 --input_cycles all --test_period 2004,2024 --moc_type geostrophic --depth_information none --paperdraft_index 051"
+    "--input_smoothing 365 --input_cycles all --test_period 2004,2024 --moc_type geostrophic --depth_information none --paperdraft_index 052"
+    "--input_smoothing 90 --input_cycles all --test_period 2004,2024 --moc_type geostrophic --depth_information deep --paperdraft_index 053"
+    "--input_smoothing 365 --input_cycles all --test_period 2004,2024 --moc_type geostrophic --depth_information deep --paperdraft_index 054"
+    "--input_smoothing 90 --input_cycles all --test_cycle 3 --validation_length 20 --depth_information none --paperdraft_index 055"
+    "--input_smoothing 365 --input_cycles all --test_cycle 3 --validation_length 20 --depth_information none --paperdraft_index 056"
+    "--input_smoothing 1825 --input_cycles all --test_cycle 3 --validation_length 20 --depth_information none --paperdraft_index 057"
+    "--input_smoothing 90 --input_cycles all --test_period 2004,2024 --depth_information none --paperdraft_index 058"
+    "--input_smoothing 365 --input_cycles all --test_period 2004,2024 --depth_information none --paperdraft_index 059"
+)
+
+
+run_program() {
+    config=$1
+    command="python ./execute_experiment.py $config"
+    echo $command
+    sleep 20
+    srun --exclusive -N1 -n1 --cpus-per-task=16 --mem=128G $command &
+}
+
+index=1
+for config in "${configs[@]}"; do
+    run_program "$config" "$index"
+    index=$((index + 1))
+done
+
+
+wait
+
+jobinfo
+
